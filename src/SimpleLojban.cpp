@@ -30,7 +30,8 @@ int main() {
           if (words[1].type == PREDICATE_WORD && words[2].type == PREDICATE_WORD && words[3].type == NAME) {
               string predicateName = words[2].value;
               string argument = words[3].value;
-              database[predicateName]=argument;
+              //push_back works on a vector which database[predicateName] is :)
+              database[predicateName].push_back(argument);
           }
       }
   }
