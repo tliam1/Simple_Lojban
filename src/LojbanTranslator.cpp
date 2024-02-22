@@ -33,6 +33,8 @@ vector<Word> split(const string& statement){
        w.type = NAME;
        w.value = word.substr(1, word.size() - 2);
      } else if (word == "i"){
+       w.type = INITIALIZATION;
+       w.value = word;
        cout << "Found 'i'. Starting Command Processing" << endl;
      } else {
        // Error: Invalid word
@@ -43,5 +45,46 @@ vector<Word> split(const string& statement){
   }
   return words;
 }
+bool IsPred(Word word){
+  if (word.value == "fatci" || word.value == "sumji" || word.value == "vujni" || word.value == "dunli"
+      || word.value == "steni" || word.value == "steko" || word.value == "cmavo") {
+      return true;
+  }
+  return false;
+}
+
+PredType GetPredType(Word word){
+  return NONE;
+}
+
+void AssignArgs(vector<Word> words){
+  int iterator = 0;
+  arg args = arg();
+  for (auto& word : words) {
+     if(word.value == "i")
+       continue;
+     if(IsPred(word)){
+       args.predType = GetPredType(word);
+     }else if (word.value == "se"){
+       //swap the next two parameters to the pred
+     }else{
+       args.params.push_back(word);
+     }
+     iterator++;
+  }
+}
+
+void ProcessArgs(arg args){
+  // make if,switch, or other functionality to analyze the enum in the passed in struct
+  // nah actually make function pointers in the class that points
+  // to the specific class function depending on the pred type
+}
+
+arg::arg(){
+  predType = NONE;
+  argCount = 0;
+}
+
+
 
 
