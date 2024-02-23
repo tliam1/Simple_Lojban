@@ -54,37 +54,100 @@ bool IsPred(Word word){
 }
 
 PredType GetPredType(Word word){
-  return NONE;
+  static const unordered_map<string, PredType> predicateMap = {
+      {"fatci", FACTI},
+      {"sumji", SUMJI},
+      {"vujni", VUJNI},
+      {"dunli", DUNLI},
+      {"steni", STENI},
+      {"steko", STEKO},
+      {"cmavo", CMAVO}
+  };
+
+  auto predType = predicateMap.find(word.value); // find() returns the key val
+  if (predType != predicateMap.end()) // find returns end() val if found nothing
+      return predType->second; // ->second is to access value associated with the key found during find operation
+  else
+      return NONE;
 }
 
 void AssignArgs(vector<Word> words){
   int iterator = 0;
-  arg args = arg();
+  // will need a vector of arg pointers if we want to do a bunch of operands in a single parse
+  arg* args = nullptr; // Pointer to base class
+  None* none = new None();
   for (auto& word : words) {
-     if(word.value == "i")
+     if(word.value == "i") // ignore i's as it indicates start of command (should be at iterator 0)
        continue;
      if(IsPred(word)){
-       args.predType = GetPredType(word);
+       PredType predType = GetPredType(word);
+       args = InitializePredClass(predType);
      }else if (word.value == "se"){
        //swap the next two parameters to the pred
      }else{
-       args.params.push_back(word);
+       if (args == nullptr) {
+         none->params.push_back(word);
+       } else {
+         /*
+          * if we find a pred and he have some previously stored params
+          * apply it to the new pred class
+          * otherwise, assign as normal
+          * this is to avoid backtracking in our parsing
+          */
+         if(!none->params.empty()) {
+           args->params = move(none->params);
+           cout<<"COPIED PARAMS FROM NONE CLASS INTO ARGS. is none now empty? " << none->params.size() <<endl;
+         }
+         args->params.push_back(word);
+       }
      }
      iterator++;
   }
+  //  checking
+  //  for (auto& items : args->params){
+  //    cout<< items.value <<endl;
+  //  }
+  // call the function in the pred class to run the argument
+  delete args;
+  delete none;
 }
 
-void ProcessArgs(arg args){
-  // make if,switch, or other functionality to analyze the enum in the passed in struct
-  // nah actually make function pointers in the class that points
-  // to the specific class function depending on the pred type
+
+arg* InitializePredClass(PredType pred){
+  switch (pred) {
+     case FACTI:
+       return new Facti();
+     case SUMJI:
+       return new Sumji();
+     case VUJNI:
+       return new Vujni();
+     case DUNLI:
+       return new Dunli();
+     case STENI:
+       return new Steni();
+     case STEKO:
+       return new Steko();
+     case CMAVO:
+       return new Cmavo();
+     default:
+       cerr << "Error: Unknown predicate type\n";
+       exit(1);
+   }
 }
+
 
 arg::arg(){
   predType = NONE;
   argCount = 0;
+  pval.s = "";
+  pval.i = -1;
+  pval.cond = false;
+  pval.boolFlad = -1;
+  pval.list.clear();
+  params.clear();
+  se_swapper.clear();
 }
 
-
-
-
+arg::~arg() {
+    // deallocate stuff here ig
+}

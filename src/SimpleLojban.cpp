@@ -10,6 +10,7 @@
 using namespace std;
 
 int main() {
+  // put this map into a class and have a pointer to the class so we can pass it around nicely
   unordered_map<string, pVal> database; // Database to store predicates and their arguments
   string statement;
   while (getline(cin, statement)) {
