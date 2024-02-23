@@ -88,7 +88,7 @@ void AssignArgs(vector<Word> words){
      }else if (word.value == "lo"){
        wasLo = true;
      }else{
-       if(wasLo && !word.type == NAME){
+       if(wasLo && !(word.type == NAME)){
          cout<< "AssignArgs: Name parse error" << endl;
        }else if (wasLo){
          // store name into unorderedmap with value -1 (currently unassigned);
