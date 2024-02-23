@@ -76,6 +76,7 @@ void AssignArgs(vector<Word> words){
   // will need a vector of arg pointers if we want to do a bunch of operands in a single parse
   arg* args = nullptr; // Pointer to base class
   None* none = new None();
+  bool wasLo = false;
   for (auto& word : words) {
      if(word.value == "i") // ignore i's as it indicates start of command (should be at iterator 0)
        continue;
@@ -84,7 +85,15 @@ void AssignArgs(vector<Word> words){
        args = InitializePredClass(predType);
      }else if (word.value == "se"){
        //swap the next two parameters to the pred
+     }else if (word.value == "lo"){
+       wasLo = true;
      }else{
+       if(wasLo && !word.type == NAME){
+         cout<< "AssignArgs: Name parse error" << endl;
+       }else if (wasLo){
+         // store name into unorderedmap with value -1 (currently unassigned);
+       }
+
        if (args == nullptr) {
          none->params.push_back(word);
        } else {
