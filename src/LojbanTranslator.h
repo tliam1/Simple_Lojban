@@ -333,6 +333,18 @@ public:
   }
   void predOperation(Storage * db) override {
       // Implementation for Steni predicate
+    if(params.size() != 1){
+      cout << "STENI ERROR: Invalid Number of arguments -->" << params.size() << endl;
+      return;
+    }
+    if(params[0].type != NAME){
+      cout << "STENI ERROR: Provided parameter is not a name!" << endl;
+      return;
+    }
+    pVal newPVal;
+    newPVal.vType = LIST;
+    db->database[params[0].value] = newPVal;
+    cout << "STENI : Assigned " << params[0].value << " To an empty list";
   }
 };
 
@@ -343,6 +355,18 @@ public:
   }
   void predOperation(Storage * db) override {
       // Implementation for Steko predicate
+    if(params[0].type != NAME){
+      //cout << "STENI ERROR: Provided parameter is not a name!" << endl;
+      //return;
+      // just forms a literal
+    }else{
+      pVal newPVal;
+      newPVal.vType = LIST;
+      /*
+       * for each parameter in list other than first param --> add it to pval list
+       */
+      db->database[params[0].value] = newPVal;
+    }
   }
 };
 

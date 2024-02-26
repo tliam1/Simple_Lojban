@@ -19,7 +19,6 @@ vector<Word> split(const string& statement){
   string word;
   while (iss >> word) {
      Word w;
-     // cout << word << endl;
      if (word == "lo" || word == "se") {
        w.type = SHORT_WORD;
        w.value = word;
@@ -108,6 +107,7 @@ void AssignArgs(vector<Word> words, Storage * db){
 
        if (args == nullptr) {
          none->params.push_back(word);
+         // cout << "GAVE NONE WORD" << endl;
        } else {
          /*
           * if we find a pred and he have some previously stored params
@@ -115,7 +115,7 @@ void AssignArgs(vector<Word> words, Storage * db){
           * otherwise, assign as normal
           * this is to avoid backtracking in our parsing
           */
-         if(!none->params.empty()) {
+         if(!(none->params.empty())) {
            args->params = move(none->params);
            args->se_swapper = move(none->se_swapper);
            // cout<<"COPIED PARAMS FROM NONE CLASS INTO ARGS" <<endl;
@@ -124,6 +124,13 @@ void AssignArgs(vector<Word> words, Storage * db){
        }
      }
      iterator++;
+  }
+
+  // if pred argument is last, we need this!
+  if(!(none->params.empty())) {
+    args->params = move(none->params);
+    args->se_swapper = move(none->se_swapper);
+    // cout<<"COPIED PARAMS FROM NONE CLASS INTO ARGS" <<endl;
   }
   //  checking
   //  for (auto& items : args->params){
