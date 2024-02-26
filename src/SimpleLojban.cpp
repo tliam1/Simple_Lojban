@@ -11,7 +11,7 @@ using namespace std;
 
 int main() {
   // put this map into a class and have a pointer to the class so we can pass it around nicely
-  unordered_map<string, pVal> database; // Database to store predicates and their arguments
+  Storage* db = new Storage();
   string statement;
   while (getline(cin, statement)) {
     vector<Word> words = split(statement);
@@ -20,7 +20,7 @@ int main() {
     // place helper functions in .h file
     if (words[0].value == "i") {
       // Check if the statement is declaring a predicate
-      AssignArgs(words);
+      AssignArgs(words, db);
     }
   }
 

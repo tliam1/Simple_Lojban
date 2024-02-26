@@ -19,7 +19,7 @@ vector<Word> split(const string& statement){
   string word;
   while (iss >> word) {
      Word w;
-     cout << word << endl;
+     // cout << word << endl;
      if (word == "lo" || word == "se") {
        w.type = SHORT_WORD;
        w.value = word;
@@ -35,7 +35,7 @@ vector<Word> split(const string& statement){
      } else if (word == "i"){
        w.type = INITIALIZATION;
        w.value = word;
-       cout << "Found 'i'. Starting Command Processing" << endl;
+       // cout << "Found 'i'. Starting Command Processing" << endl;
      } else {
        // Error: Invalid word
        cerr << "Error: Invalid word \"" << word << "\" found in the statement\n";
@@ -71,7 +71,7 @@ PredType GetPredType(Word word){
       return NONE;
 }
 
-void AssignArgs(vector<Word> words){
+void AssignArgs(vector<Word> words, Storage * db){
   int iterator = 0;
   // will need a vector of arg pointers if we want to do a bunch of operands in a single parse
   arg* args = nullptr; // Pointer to base class
@@ -81,17 +81,29 @@ void AssignArgs(vector<Word> words){
      if(word.value == "i") // ignore i's as it indicates start of command (should be at iterator 0)
        continue;
      if(IsPred(word)){
-       PredType predType = GetPredType(word);
-       args = InitializePredClass(predType);
+       if(wasLo){
+         wasLo = false;
+       }else{
+         PredType predType = GetPredType(word);
+         args = InitializePredClass(predType);
+       }
      }else if (word.value == "se"){
        //swap the next two parameters to the pred
+       if (args == nullptr) {
+         none->se_swapper.push_back({none->params.size(), none->params.size()+1});
+       }else{
+         args->se_swapper.push_back({none->params.size(), none->params.size()+1});
+       }
      }else if (word.value == "lo"){
        wasLo = true;
      }else{
        if(wasLo && !(word.type == NAME)){
-         cout<< "AssignArgs: Name parse error" << endl;
+         cout<< "AssignArgs WARNGING: ASSIGNING LO A PRED NAME" << endl;
+         word.type = NAME;
+         wasLo = false;
        }else if (wasLo){
          // store name into unorderedmap with value -1 (currently unassigned);
+         wasLo = false;
        }
 
        if (args == nullptr) {
@@ -105,7 +117,8 @@ void AssignArgs(vector<Word> words){
           */
          if(!none->params.empty()) {
            args->params = move(none->params);
-           cout<<"COPIED PARAMS FROM NONE CLASS INTO ARGS. is none now empty? " << none->params.size() <<endl;
+           args->se_swapper = move(none->se_swapper);
+           // cout<<"COPIED PARAMS FROM NONE CLASS INTO ARGS" <<endl;
          }
          args->params.push_back(word);
        }
@@ -117,6 +130,7 @@ void AssignArgs(vector<Word> words){
   //    cout<< items.value <<endl;
   //  }
   // call the function in the pred class to run the argument
+  args->predOperation(db);
   delete args;
   delete none;
 }
@@ -147,7 +161,6 @@ arg* InitializePredClass(PredType pred){
 
 arg::arg(){
   predType = NONE;
-  argCount = 0;
   pval.s = "";
   pval.i = -1;
   pval.cond = false;
@@ -159,4 +172,13 @@ arg::arg(){
 
 arg::~arg() {
     // deallocate stuff here ig
+}
+Storage::Storage(){
+  database.clear();
+}
+bool arg::findInStorage(Storage * db, Word word){
+  if (db->database.find(word.value) == db->database.end()){
+    return false;
+  }
+  return true;
 }
