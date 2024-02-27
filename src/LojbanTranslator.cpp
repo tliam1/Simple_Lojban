@@ -74,18 +74,15 @@ void AssignArgs(vector<Word> words, Storage * db){
   int iterator = 0;
   // will need a vector of arg pointers if we want to do a bunch of operands in a single parse
   arg* args = nullptr; // Pointer to base class
-  None* none = new None();
-  bool wasLo = false;
+  None* none = new None(); // variable to load params and se info is predicate is not yet known to avoid backtracking
+  bool wasLo = false; // dictates if the previous word was a Lo
   for (auto& word : words) {
      if(word.value == "i") // ignore i's as it indicates start of command (should be at iterator 0)
        continue;
-     if(IsPred(word)){
-       if(wasLo){
-         wasLo = false;
-       }else{
-         PredType predType = GetPredType(word);
-         args = InitializePredClass(predType);
-       }
+     if(IsPred(word) && !wasLo){ // !wasLo is checking if we have a named predicate being used
+       PredType predType = GetPredType(word);
+       // cout << "Assigned predicate: " << word.value << endl;
+       args = InitializePredClass(predType);
      }else if (word.value == "se"){
        //swap the next two parameters to the pred
        if (args == nullptr) {
@@ -96,18 +93,19 @@ void AssignArgs(vector<Word> words, Storage * db){
      }else if (word.value == "lo"){
        wasLo = true;
      }else{
-       if(wasLo && !(word.type == NAME)){
-         cout<< "AssignArgs WARNGING: ASSIGNING LO A PRED NAME" << endl;
+       if(wasLo && (word.type != NAME)){
+         // cout<< "AssignArgs WARNGING: Assigning lo a predicate name" << endl;
          word.type = NAME;
-         wasLo = false;
-       }else if (wasLo){
+       }
+
+       if (wasLo){
          // store name into unorderedmap with value -1 (currently unassigned);
          wasLo = false;
        }
 
        if (args == nullptr) {
          none->params.push_back(word);
-         // cout << "GAVE NONE WORD" << endl;
+         // cout << "GAVE NONE: " << word.value << endl;
        } else {
          /*
           * if we find a pred and he have some previously stored params
@@ -130,16 +128,17 @@ void AssignArgs(vector<Word> words, Storage * db){
   if(!(none->params.empty())) {
     args->params = move(none->params);
     args->se_swapper = move(none->se_swapper);
-    // cout<<"COPIED PARAMS FROM NONE CLASS INTO ARGS" <<endl;
   }
-  //  checking
-  //  for (auto& items : args->params){
-  //    cout<< items.value <<endl;
-  //  }
+
   // call the function in the pred class to run the argument
-  args->predOperation(db);
+  if(args != nullptr)
+    args->predOperation(db);
+  else
+    none->predOperation(db);
   delete args;
   delete none;
+  // uncomment to see db grow as more things are added
+  // db->printAlteredValues();
 }
 
 
@@ -170,8 +169,6 @@ arg::arg(){
   predType = NONE;
   pval.s = "";
   pval.i = -1;
-  pval.cond = false;
-  pval.boolFlad = -1;
   pval.list.clear();
   params.clear();
   se_swapper.clear();
@@ -188,4 +185,47 @@ bool arg::findInStorage(Storage * db, Word word){
     return false;
   }
   return true;
+}
+
+
+void Storage::printAlteredValues() {
+    for (const auto& pair : database) {
+        const string& key = pair.first;
+        const pVal& value = pair.second;
+
+        // Compare value with default-constructed pVal
+        pVal defaultVal;
+        if (value == defaultVal) {
+            // Value has not been altered from default
+            continue;
+        }
+
+        // Print the altered value
+        cout << "Key: " << key << endl;
+        cout << "Final Values:" << endl;
+        cout << "vType: " << value.vType << endl;
+        cout << "s: " << value.s << endl;
+        cout << "i: " << value.i << endl;
+
+        // Print list if not empty
+        if (!value.list.empty()) {
+            cout << "list:" << endl;
+            for (const auto& listItem : value.list) {
+                cout << listItem << endl;
+            }
+        }
+
+        // Print uP if not empty
+        if (!value.uP.empty()) {
+            cout << "uP:" << endl;
+            for (const auto& row : value.uP) {
+                for (const auto& item : row) {
+                    cout << item << " ";
+                }
+                cout << endl;
+            }
+        }
+
+        cout << "-----------------------" << endl;
+    }
 }
