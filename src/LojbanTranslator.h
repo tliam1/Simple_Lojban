@@ -396,6 +396,7 @@ public:
       pVal newPVal;
       newPVal.vType = LIST;
       vector<string> newList;
+      newList.push_back(params[1].value);
       /*
        * for each parameter in list other than first param --> add it to pval list
        */
@@ -409,13 +410,15 @@ public:
           continue;
         }else if (isListItem){
           newList.push_back(word.value);
+          isListItem = false;
         }
       }
       if(params[0].type == NAME){
+        newPVal.list = newList;
         db->database[params[0].value] = newPVal;
         cout << "STEKO: Added new list. " << params[0].value <<  " contains: ";
-        for (size_t i = 1; i < params.size(); ++i) {
-          cout << params[i].value << " ";
+        for (size_t i = 0; i < newList.size(); i++) {
+          cout << newList[i] << " ";
         }
         cout << endl;
         return;

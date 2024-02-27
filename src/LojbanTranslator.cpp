@@ -138,6 +138,7 @@ void AssignArgs(vector<Word> words, Storage * db){
   delete args;
   delete none;
   // uncomment to see db grow as more things are added
+  //  ignores default values
   // db->printAlteredValues();
 }
 
@@ -211,8 +212,9 @@ void Storage::printAlteredValues() {
         if (!value.list.empty()) {
             cout << "list:" << endl;
             for (const auto& listItem : value.list) {
-                cout << listItem << endl;
+                cout << listItem << " ";
             }
+            cout << endl;
         }
 
         // Print uP if not empty
